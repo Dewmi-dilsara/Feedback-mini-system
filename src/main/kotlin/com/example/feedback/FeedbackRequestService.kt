@@ -61,6 +61,11 @@ class FeedbackRequestService(
             throw RuntimeException("EXPIRED")
         }
 
+        // ✅ Correct place for this check
+        if (request.status == "RESPONDED") {
+            throw RuntimeException("ALREADY_RESPONDED")
+        }
+
         // Load form config
         val form = formRepository
             .findByEnterpriseId(request.enterpriseId)
