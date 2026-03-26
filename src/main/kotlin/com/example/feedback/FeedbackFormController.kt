@@ -1,5 +1,6 @@
 package com.example.feedback
 
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -19,7 +20,7 @@ class FeedbackFormController(
     @PutMapping("/{enterpriseId}/session-feedback-form")
     fun saveForm(
         @PathVariable enterpriseId: String,
-        @RequestBody config: FeedbackFormConfig
+        @Valid @RequestBody config: FeedbackFormConfig
     ): FeedbackFormConfig {
 
         return service.saveForm(
