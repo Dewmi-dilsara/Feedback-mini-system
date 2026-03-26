@@ -1,6 +1,5 @@
 package com.example.feedback
 
-import com.example.feedback.FeedbackFormRepository
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -49,50 +48,40 @@ class FeedbackRequestService(
     }
 
     fun getFeedbackDetails(
-    feedbackId: String
-): PublicFeedbackResponse {
+        feedbackId: String
+    ): PublicFeedbackResponse {
 
-    val request = repository.findById(feedbackId)
-        .orElseThrow {
-            RuntimeException("Feedback not found")
+        val request = repository.findById(feedbackId)
+            .orElseThrow {
+                RuntimeException("Feedback not found")
+            }
+
+        // Check expired
+        if (request.expiresAt.isBefore(Instant.now())) {
+            throw RuntimeException("EXPIRED")
         }
 
-    if (request.expiresAt.isBefore(Instant.now())) {
-        throw RuntimeException("EXPIRED")
+        // Load form config
+        val form = formRepository
+            .findByEnterpriseId(request.enterpriseId)
+            ?: throw RuntimeException("Form config not found")
+
+        return PublicFeedbackResponse(
+
+    feedbackId = request.id!!,
+
+    enterpriseId = request.enterpriseId,
+
+    expiresAt = request.expiresAt.toString(),
+
+    headerText = form.headerText!!,
+
+    headerDescription = form.headerDescription!!,
+
+    ratingLabels = form.ratingLabels,
+
+    footerText = form.footerText!!
+)
     }
 
-    val form = formRepository
-        .findByEnterpriseId(request.enterpriseId)
-        ?: throw RuntimeException("Form config not found")
-
-    return PublicFeedbackResponse(
-
-        feedbackId = request.id!!,
-
-        enterpriseId = request.enterpriseId,
-
-        expiresAt = request.expiresAt.toString(),
-
-        headerText = form.headerText,
-
-        headerDescription = form.headerDescription,
-
-        ratingLabels = form.ratingLabels,
-
-        footerText = form.footerText
-    )
-}: FeedbackRequest {
-
-    val request = repository.findById(feedbackId)
-        .orElseThrow {
-            RuntimeException("Feedback not found")
-        }
-
-    // Check if expired
-    if (request.expiresAt.isBefore(Instant.now())) {
-        throw RuntimeException("EXPIRED")
-    }
-
-    return request
-}
 }
