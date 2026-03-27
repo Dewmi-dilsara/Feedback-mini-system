@@ -12,54 +12,53 @@ data class FeedbackFormConfig(
     @Id
     val id: String? = null,
 
-    // Enterprise ID
-    @field:NotBlank(message = "Enterprise ID is required")
-    val enterpriseId: String,
+    // Enterprise ID (from path, not required in body)
+    val enterpriseId: String? = null,
 
     // Header Text
-    @field:NotBlank(message = "Header text is required")
+    @field:NotBlank(message = "headerText is required")
     @field:Size(
         max = 200,
-        message = "Header text must not exceed 200 characters"
+        message = "headerText must not exceed 200 characters"
     )
     val headerText: String,
 
     // Header Description (Optional)
     @field:Size(
         max = 500,
-        message = "Header description must not exceed 500 characters"
+        message = "headerDescription must not exceed 500 characters"
     )
     val headerDescription: String? = null,
 
     // Footer Text (Optional)
     @field:Size(
         max = 200,
-        message = "Footer text must not exceed 200 characters"
+        message = "footerText must not exceed 200 characters"
     )
     val footerText: String? = null,
 
     // Rating Labels — Must be exactly 5
-    @field:NotEmpty(message = "Rating labels are required")
+    @field:NotEmpty(message = "ratingLabels are required")
     @field:Size(
         min = 5,
         max = 5,
-        message = "Rating labels must contain exactly 5 items"
+        message = "ratingLabels must contain exactly 5 items"
     )
     val ratingLabels: List<
-        @NotBlank(message = "Rating label cannot be blank")
+        @NotBlank(message = "ratingLabels cannot contain blank values")
         String
     >,
 
     // Thank You Text
-    @field:NotBlank(message = "Thank you text is required")
+    @field:NotBlank(message = "thankYouText is required")
     val thankYouText: String,
 
     // Invalid Reply Text
-    @field:NotBlank(message = "Invalid reply text is required")
+    @field:NotBlank(message = "invalidReplyText is required")
     val invalidReplyText: String,
 
     // Expired Reply Text
-    @field:NotBlank(message = "Expired reply text is required")
+    @field:NotBlank(message = "expiredReplyText is required")
     val expiredReplyText: String,
 
     // Skip Channels (Optional)
