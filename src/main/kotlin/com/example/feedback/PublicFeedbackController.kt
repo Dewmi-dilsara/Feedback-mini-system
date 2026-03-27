@@ -26,9 +26,9 @@ class PublicFeedbackController(
 
     @GetMapping("/{feedbackId}")
     fun getFeedback(
-       @PathVariable feedbackId: String
-): Any {
+       @PathVariable("feedbackId") feedbackId: String
+    ): Any {
 
-    return service.getFeedbackDetails(feedbackId)
-}
+        return service.getFeedbackDetails(feedbackId)
+    }
 }

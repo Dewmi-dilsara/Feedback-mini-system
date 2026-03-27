@@ -1,5 +1,6 @@
 package com.example.feedback
 
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -12,15 +13,27 @@ class FeedbackRequestService(
 
 ) {
 
+    private fun findRequest(feedbackId: String): FeedbackRequest {
+        repository.findById(feedbackId).let { existing ->
+            if (existing.isPresent) return existing.get()
+        }
+
+        if (ObjectId.isValid(feedbackId)) {
+            val mongoId = ObjectId(feedbackId).toHexString()
+            repository.findById(mongoId).let { existing ->
+                if (existing.isPresent) return existing.get()
+            }
+        }
+
+        throw RuntimeException("Feedback not found")
+    }
+
     fun respondToFeedback(
         feedbackId: String,
         rating: Int
     ): String {
 
-        val request = repository.findById(feedbackId)
-            .orElseThrow {
-                RuntimeException("Feedback not found")
-            }
+        val request = findRequest(feedbackId)
 
         // Check expired
         if (request.expiresAt.isBefore(Instant.now())) {
@@ -51,10 +64,7 @@ class FeedbackRequestService(
         feedbackId: String
     ): PublicFeedbackResponse {
 
-        val request = repository.findById(feedbackId)
-            .orElseThrow {
-                RuntimeException("Feedback not found")
-            }
+        val request = findRequest(feedbackId)
 
         // Check expired
         if (request.expiresAt.isBefore(Instant.now())) {
@@ -79,13 +89,13 @@ class FeedbackRequestService(
 
     expiresAt = request.expiresAt.toString(),
 
-    headerText = form.headerText!!,
+    headerText = form.headerText,
 
-    headerDescription = form.headerDescription!!,
+    headerDescription = form.headerDescription ?: "",
 
     ratingLabels = form.ratingLabels,
 
-    footerText = form.footerText!!
+    footerText = form.footerText ?: ""
 )
     }
 
