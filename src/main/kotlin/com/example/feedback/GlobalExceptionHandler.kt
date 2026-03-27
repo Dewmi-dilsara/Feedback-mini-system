@@ -89,7 +89,8 @@ class GlobalExceptionHandler {
 
             message.contains("required", true) ||
             message.contains("ratingLabels", true) ||
-            message.contains("channel", true) ->
+            message.contains("channel", true) ||
+            ex is IllegalArgumentException ->
 
                 ResponseEntity(
                     mapOf("error" to message),
@@ -98,9 +99,20 @@ class GlobalExceptionHandler {
 
             else ->
                 ResponseEntity(
-                    mapOf("error" to "INTERNAL_ERROR"),
+                    mapOf("error" to message.ifBlank { "INTERNAL_ERROR" }),
                     HttpStatus.INTERNAL_SERVER_ERROR
                 )
         }
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(
+        ex: Exception
+    ): ResponseEntity<Map<String, String>> {
+        val message = ex.message?.takeIf { it.isNotBlank() } ?: "INTERNAL_ERROR"
+        return ResponseEntity(
+            mapOf("error" to message),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        )
     }
 }

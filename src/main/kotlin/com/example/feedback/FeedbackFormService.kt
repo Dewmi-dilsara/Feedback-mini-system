@@ -2,10 +2,14 @@ package com.example.feedback
 
 import org.springframework.stereotype.Service
 
+import org.slf4j.LoggerFactory
+
 @Service
 class FeedbackFormService(
     private val repository: FeedbackFormRepository
 ) {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     private val allowedChannels = setOf(
         "WHATSAPP",
@@ -26,14 +30,18 @@ class FeedbackFormService(
         enterpriseId: String,
         config: FeedbackFormConfig
     ): FeedbackFormConfig {
-
         validateConfig(config)
 
         val updatedConfig = config.copy(
             enterpriseId = enterpriseId
         )
 
-        return repository.save(updatedConfig)
+        try {
+            return repository.save(updatedConfig)
+        } catch (ex: Exception) {
+            logger.error("Failed to save FeedbackForm for enterprise=$enterpriseId", ex)
+            throw ex
+        }
     }
 
     private fun validateConfig(
@@ -43,15 +51,11 @@ class FeedbackFormService(
     // -------- REQUIRED TEXT --------
 
     if (config.headerText.isNullOrBlank()) {
-        throw RuntimeException(
-            "headerText is required"
-        )
+        throw IllegalArgumentException("headerText is required")
     }
 
     if (config.headerDescription.isNullOrBlank()) {
-        throw RuntimeException(
-            "headerDescription is required"
-        )
+        throw IllegalArgumentException("headerDescription is required")
     }
 
     if (config.footerText.isNullOrBlank()) {
