@@ -105,3 +105,46 @@ AI-generated content was used as:
 - Learning reference
 
 All final code decisions were reviewed and validated manually.
+
+---
+
+## Representative Prompts Used
+
+Below are examples of prompts used during development:
+
+1. "Help me debug a 404 error when fetching feedback by feedbackId in Spring Boot."
+
+2. "Generate a Next.js public feedback page that fetches feedback data and submits a rating."
+
+3. "Write unit tests for FeedbackRequestService using Mockito."
+
+4. "Fix validation errors when saving feedback form configuration."
+
+5. "Help implement GlobalExceptionHandler for consistent API responses."
+
+---
+
+## AI Suggestion Rejected
+
+One AI suggestion recommended using a more complex architecture with additional abstraction layers and DTO mapping for every model.
+
+This approach was rejected because:
+
+- It increased complexity unnecessarily.
+- The assignment emphasized simplicity and practicality.
+- A simpler layered architecture was sufficient for the scope.
+
+Instead, a lightweight layered design was used to keep the solution maintainable and understandable.
+
+---
+
+## How AI Output Was Validated
+
+AI-generated code was validated using the following methods:
+
+- Manually reviewing generated code before applying it.
+- Running backend and frontend locally to test behavior.
+- Writing and running unit tests to verify logic correctness.
+- Testing edge cases such as expired and already responded feedback.
+- Comparing API responses with expected behavior.
+- Fixing errors detected during testing rather than blindly trusting generated output.
