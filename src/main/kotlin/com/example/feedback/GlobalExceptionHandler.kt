@@ -11,18 +11,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    // -------------------------
+    // Validation Errors
+    // -------------------------
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException
     ): ResponseEntity<Map<String, String>> {
-        val message = ex.bindingResult
-            .allErrors
-            .mapNotNull { it.defaultMessage }
-            .firstOrNull { it.isNotBlank() }
-            ?: "INVALID_REQUEST"
+
+        val message =
+            ex.bindingResult
+                .allErrors
+                .mapNotNull { it.defaultMessage }
+                .firstOrNull { it.isNotBlank() }
+                ?: "Invalid request"
 
         return ResponseEntity(
-            mapOf("error" to message),
+            mapOf("message" to message),
             HttpStatus.BAD_REQUEST
         )
     }
@@ -31,14 +37,16 @@ class GlobalExceptionHandler {
     fun handleBindException(
         ex: BindException
     ): ResponseEntity<Map<String, String>> {
-        val message = ex.bindingResult
-            .allErrors
-            .mapNotNull { it.defaultMessage }
-            .firstOrNull { it.isNotBlank() }
-            ?: "INVALID_REQUEST"
+
+        val message =
+            ex.bindingResult
+                .allErrors
+                .mapNotNull { it.defaultMessage }
+                .firstOrNull { it.isNotBlank() }
+                ?: "Invalid request"
 
         return ResponseEntity(
-            mapOf("error" to message),
+            mapOf("message" to message),
             HttpStatus.BAD_REQUEST
         )
     }
@@ -47,71 +55,102 @@ class GlobalExceptionHandler {
     fun handleHttpMessageNotReadable(
         ex: HttpMessageNotReadableException
     ): ResponseEntity<Map<String, String>> {
-        val message = ex.cause?.message ?: ex.message ?: "invalid request body"
+
         return ResponseEntity(
-            mapOf("error" to message),
+            mapOf(
+                "message" to "Invalid request body"
+            ),
             HttpStatus.BAD_REQUEST
         )
     }
+
+    // -------------------------
+    // Runtime Errors
+    // -------------------------
 
     @ExceptionHandler(RuntimeException::class)
     fun handleRuntimeException(
         ex: RuntimeException
     ): ResponseEntity<Map<String, String>> {
 
-        val message = ex.message ?: "UNKNOWN_ERROR"
+        val message =
+            ex.message ?: "UNKNOWN_ERROR"
 
         return when {
 
+            message.contains("NOT_FOUND", true) ||
+
             message.contains("not found", true) ->
+
                 ResponseEntity(
-                    mapOf("error" to "NOT_FOUND"),
+                    mapOf(
+                        "message" to
+                            "Feedback not found"
+                    ),
                     HttpStatus.NOT_FOUND
                 )
 
             message.contains("EXPIRED", true) ->
+
                 ResponseEntity(
-                    mapOf("error" to "EXPIRED"),
-                    HttpStatus.GONE
+                    mapOf(
+                        "message" to
+                            "This feedback link has expired."
+                    ),
+                    HttpStatus.OK
                 )
 
-            message.contains("ALREADY_RESPONDED", true) ->
+            message.contains(
+                "ALREADY_RESPONDED",
+                true
+            ) ->
+
                 ResponseEntity(
-                    mapOf("error" to "ALREADY_RESPONDED"),
-                    HttpStatus.CONFLICT
+                    mapOf(
+                        "message" to
+                            "Already responded"
+                    ),
+                    HttpStatus.OK
                 )
 
-            message.contains("Invalid rating", true) ->
-                ResponseEntity(
-                    mapOf("error" to "INVALID_RATING"),
-                    HttpStatus.BAD_REQUEST
-                )
-
-            message.contains("required", true) ||
-            message.contains("ratingLabels", true) ||
-            message.contains("channel", true) ||
-            ex is IllegalArgumentException ->
+            message.contains(
+                "Invalid rating",
+                true
+            ) ->
 
                 ResponseEntity(
-                    mapOf("error" to message),
+                    mapOf(
+                        "message" to
+                            "Invalid rating"
+                    ),
                     HttpStatus.BAD_REQUEST
                 )
 
             else ->
+
                 ResponseEntity(
-                    mapOf("error" to message.ifBlank { "INTERNAL_ERROR" }),
+                    mapOf(
+                        "message" to message
+                    ),
                     HttpStatus.INTERNAL_SERVER_ERROR
                 )
         }
     }
 
+    // -------------------------
+    // Generic Exception
+    // -------------------------
+
     @ExceptionHandler(Exception::class)
     fun handleGenericException(
         ex: Exception
     ): ResponseEntity<Map<String, String>> {
-        val message = ex.message?.takeIf { it.isNotBlank() } ?: "INTERNAL_ERROR"
+
         return ResponseEntity(
-            mapOf("error" to message),
+            mapOf(
+                "message" to
+                    "Internal server error"
+            ),
             HttpStatus.INTERNAL_SERVER_ERROR
         )
     }

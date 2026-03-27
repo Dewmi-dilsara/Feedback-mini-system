@@ -39,23 +39,31 @@ export default function FeedbackPage({
 
   }, [params]);
 
-  // Fetch feedback data
+  // Fetch feedback
   useEffect(() => {
 
     if (!feedbackId) return;
 
-    console.log(
-      "Fetching feedback..."
-    );
-
     fetch(
       `http://localhost:8080/api/public/feedback/${feedbackId}`
     )
-      .then((res) => {
+
+      .then(async (res) => {
+
+        const json =
+          await res.json();
+
+        console.log(
+          "API RESPONSE:",
+          json
+        );
+
+        // Handle error response
 
         if (!res.ok) {
 
           setMessage(
+            json.message ||
             "Feedback not found"
           );
 
@@ -63,23 +71,32 @@ export default function FeedbackPage({
 
         }
 
-        return res.json();
+        // Handle expired/responded
+
+        if (json.message) {
+
+          setMessage(
+            json.message
+          );
+
+          return null;
+
+        }
+
+        return json;
 
       })
+
       .then((json) => {
 
         if (json) {
-
-          console.log(
-            "API RESPONSE:",
-            json
-          );
 
           setData(json);
 
         }
 
       })
+
       .catch(() => {
 
         setMessage(
@@ -95,14 +112,10 @@ export default function FeedbackPage({
     rating: number
   ) {
 
-    console.log(
-      "Submitting rating:",
-      rating
-    );
-
     fetch(
       `http://localhost:8080/api/public/feedback/${feedbackId}/respond`,
       {
+
         method: "POST",
 
         headers: {
@@ -115,33 +128,27 @@ export default function FeedbackPage({
         }),
       }
     )
+
       .then(async (res) => {
 
         const text =
           await res.text();
 
-        console.log(
-          "Response:",
-          text
-        );
-
-        // Handle response states
+        console.log(text);
 
         if (
-          text
-            .toLowerCase()
+          text.toLowerCase()
             .includes("expired")
         ) {
 
           setMessage(
-            data?.expiredReplyText ||
-            "Feedback expired"
+            "This feedback link has expired."
           );
 
         }
+
         else if (
-          text
-            .toLowerCase()
+          text.toLowerCase()
             .includes("already")
         ) {
 
@@ -150,27 +157,28 @@ export default function FeedbackPage({
           );
 
         }
+
         else {
 
           setMessage(
-            data?.thankYouText ||
-            "Thank you for your feedback!"
+            "Thanks for your feedback!"
           );
 
         }
 
       })
+
       .catch(() => {
 
         setMessage(
-          "Failed to submit feedback"
+          "Failed to submit"
         );
 
       });
 
   }
 
-  // Show message state
+  // Show message screen
   if (message) {
 
     return (
@@ -191,15 +199,13 @@ export default function FeedbackPage({
 
   }
 
-  // Loading state
+  // Loading screen
   if (!data) {
 
     return (
-
       <div>
         Loading feedback...
       </div>
-
     );
 
   }
@@ -254,7 +260,8 @@ export default function FeedbackPage({
 
             </button>
 
-        ))}
+          )
+        )}
 
       </div>
 
