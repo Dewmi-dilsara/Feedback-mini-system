@@ -64,7 +64,9 @@ class TestDataLoader {
                 println("✅ TEST FORM CONFIG CREATED")
             }
 
-            // Create valid request
+            // -----------------------------
+            // VALID FEEDBACK
+            // -----------------------------
 
             val request = FeedbackRequest(
                 enterpriseId = enterpriseId,
@@ -77,9 +79,11 @@ class TestDataLoader {
 
             val saved = repository.save(request)
 
-            println("✅ TEST FEEDBACK ID: ${saved.id}")
+            println("✅ VALID FEEDBACK ID: ${saved.id}")
 
-            // Create expired request
+            // -----------------------------
+            // EXPIRED FEEDBACK
+            // -----------------------------
 
             val expiredRequest = FeedbackRequest(
                 enterpriseId = enterpriseId,
@@ -90,11 +94,16 @@ class TestDataLoader {
                     Instant.now().minus(1, ChronoUnit.DAYS)
             )
 
-            repository.save(expiredRequest)
+            val expiredSaved =
+                repository.save(expiredRequest)
 
-            println("✅ EXPIRED FEEDBACK CREATED")
+            println(
+                "⏰ EXPIRED FEEDBACK ID: ${expiredSaved.id}"
+            )
 
-            // Create responded request
+            // -----------------------------
+            // RESPONDED FEEDBACK
+            // -----------------------------
 
             val respondedRequest = FeedbackRequest(
                 enterpriseId = enterpriseId,
@@ -105,9 +114,12 @@ class TestDataLoader {
                     Instant.now().plus(1, ChronoUnit.DAYS)
             )
 
-            repository.save(respondedRequest)
+            val respondedSaved =
+                repository.save(respondedRequest)
 
-            println("✅ RESPONDED FEEDBACK CREATED")
+            println(
+                "✅ RESPONDED FEEDBACK ID: ${respondedSaved.id}"
+            )
         }
     }
 }
