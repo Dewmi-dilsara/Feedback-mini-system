@@ -15,6 +15,8 @@ class GlobalExceptionHandler {
 
         return when (ex.message) {
 
+            // -------- PUBLIC FEEDBACK ERRORS --------
+
             "Feedback not found" -> ResponseEntity(
                 mapOf("error" to "NOT_FOUND"),
                 HttpStatus.NOT_FOUND
@@ -35,10 +37,41 @@ class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
             )
 
+            // -------- FORM VALIDATION ERRORS --------
+
+            "headerText is required",
+            "headerDescription is required",
+            "footerText is required",
+            "thankYouText is required",
+            "invalidReplyText is required",
+            "expiredReplyText is required",
+            "ratingLabels must contain exactly 5 items",
+            "ratingLabels cannot contain blank values",
+            "skipForChannels cannot contain duplicates",
+            "Invalid channel name" -> ResponseEntity(
+                mapOf("error" to ex.message!!),
+                HttpStatus.BAD_REQUEST
+            )
+
+            // -------- DEFAULT --------
+
             else -> ResponseEntity(
                 mapOf("error" to "INTERNAL_ERROR"),
                 HttpStatus.INTERNAL_SERVER_ERROR
             )
         }
+    }
+
+    // Catch unexpected exceptions
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(
+        ex: Exception
+    ): ResponseEntity<Map<String, String>> {
+
+        return ResponseEntity(
+            mapOf("error" to "INTERNAL_ERROR"),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        )
     }
 }
