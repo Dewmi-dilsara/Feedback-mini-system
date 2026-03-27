@@ -13,9 +13,11 @@ class GlobalExceptionHandler {
         ex: RuntimeException
     ): ResponseEntity<Map<String, String>> {
 
-        return when (ex.message) {
+        val message = ex.message ?: "INTERNAL_ERROR"
 
-            // -------- PUBLIC FEEDBACK ERRORS --------
+        return when (message) {
+
+            // ---------- PUBLIC FEEDBACK ----------
 
             "Feedback not found" -> ResponseEntity(
                 mapOf("error" to "NOT_FOUND"),
@@ -37,7 +39,7 @@ class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
             )
 
-            // -------- FORM VALIDATION ERRORS --------
+            // ---------- FORM VALIDATION ----------
 
             "headerText is required",
             "headerDescription is required",
@@ -49,11 +51,9 @@ class GlobalExceptionHandler {
             "ratingLabels cannot contain blank values",
             "skipForChannels cannot contain duplicates",
             "Invalid channel name" -> ResponseEntity(
-                mapOf("error" to ex.message!!),
+                mapOf("error" to message),
                 HttpStatus.BAD_REQUEST
             )
-
-            // -------- DEFAULT --------
 
             else -> ResponseEntity(
                 mapOf("error" to "INTERNAL_ERROR"),
@@ -61,8 +61,6 @@ class GlobalExceptionHandler {
             )
         }
     }
-
-    // Catch unexpected exceptions
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(
