@@ -13,90 +13,174 @@ class FeedbackRequestService(
 
 ) {
 
-    private fun findRequest(feedbackId: String): FeedbackRequest {
-        repository.findById(feedbackId).let { existing ->
-            if (existing.isPresent) return existing.get()
-        }
+    // -----------------------------
+    // Find request safely
+    // -----------------------------
+
+    private fun findRequest(
+        feedbackId: String
+    ): FeedbackRequest {
+
+        repository.findById(feedbackId)
+            .let { existing ->
+
+                if (existing.isPresent)
+                    return existing.get()
+            }
 
         if (ObjectId.isValid(feedbackId)) {
-            val mongoId = ObjectId(feedbackId).toHexString()
-            repository.findById(mongoId).let { existing ->
-                if (existing.isPresent) return existing.get()
-            }
+
+            val mongoId =
+                ObjectId(feedbackId).toHexString()
+
+            repository.findById(mongoId)
+                .let { existing ->
+
+                    if (existing.isPresent)
+                        return existing.get()
+                }
         }
 
-        throw RuntimeException("Feedback not found")
+        throw RuntimeException(
+            "NOT_FOUND"
+        )
     }
 
+    // -----------------------------
+    // Respond API
+    // -----------------------------
+
     fun respondToFeedback(
+
         feedbackId: String,
+
         rating: Int
+
     ): String {
 
-        val request = findRequest(feedbackId)
+        val request =
+            findRequest(feedbackId)
+
+        val form =
+            formRepository
+                .findByEnterpriseId(
+                    request.enterpriseId
+                )
 
         // Check expired
-        if (request.expiresAt.isBefore(Instant.now())) {
-            return "EXPIRED"
+
+        if (
+            request.expiresAt
+                .isBefore(Instant.now())
+        ) {
+
+            return form?.expiredReplyText
+                ?: "EXPIRED"
         }
 
         // Check already responded
-        if (request.status == "RESPONDED") {
+
+        if (
+            request.status == "RESPONDED"
+        ) {
+
             return "ALREADY_RESPONDED"
         }
 
         // Validate rating
+
         if (rating !in 1..5) {
-            throw RuntimeException("Invalid rating")
+
+            return form?.invalidReplyText
+                ?: "INVALID_RATING"
         }
 
-        val updated = request.copy(
-            rating = rating,
-            status = "RESPONDED"
-        )
+        val updated =
+            request.copy(
+
+                rating = rating,
+
+                status = "RESPONDED"
+            )
 
         repository.save(updated)
 
-        return "SUCCESS"
+        return form?.thankYouText
+            ?: "SUCCESS"
     }
 
-    fun getFeedbackDetails(
-        feedbackId: String
-    ): PublicFeedbackResponse {
+    // -----------------------------
+    // Get Feedback Details
+    // -----------------------------
 
-        val request = findRequest(feedbackId)
+    fun getFeedbackDetails(
+
+        feedbackId: String
+
+    ): Any {
+
+        val request =
+            findRequest(feedbackId)
+
+        val form =
+            formRepository
+                .findByEnterpriseId(
+                    request.enterpriseId
+                )
+                ?: throw RuntimeException(
+                    "Form config not found"
+                )
 
         // Check expired
-        if (request.expiresAt.isBefore(Instant.now())) {
-            throw RuntimeException("EXPIRED")
+
+        if (
+            request.expiresAt
+                .isBefore(Instant.now())
+        ) {
+
+            return mapOf(
+
+                "message" to
+                    form.expiredReplyText
+            )
         }
 
-        // ✅ Correct place for this check
-        if (request.status == "RESPONDED") {
-            throw RuntimeException("ALREADY_RESPONDED")
+        // Check responded
+
+        if (
+            request.status == "RESPONDED"
+        ) {
+
+            return mapOf(
+
+                "message" to
+                    "Already responded"
+            )
         }
 
-        // Load form config
-        val form = formRepository
-            .findByEnterpriseId(request.enterpriseId)
-            ?: throw RuntimeException("Form config not found")
+        // Normal response
 
         return PublicFeedbackResponse(
 
-    feedbackId = request.id!!,
+            feedbackId = request.id!!,
 
-    enterpriseId = request.enterpriseId,
+            enterpriseId =
+                request.enterpriseId,
 
-    expiresAt = request.expiresAt.toString(),
+            expiresAt =
+                request.expiresAt.toString(),
 
-    headerText = form.headerText,
+            headerText =
+                form.headerText,
 
-    headerDescription = form.headerDescription ?: "",
+            headerDescription =
+                form.headerDescription ?: "",
 
-    ratingLabels = form.ratingLabels,
+            ratingLabels =
+                form.ratingLabels,
 
-    footerText = form.footerText ?: ""
-)
+            footerText =
+                form.footerText ?: ""
+        )
     }
-
 }
