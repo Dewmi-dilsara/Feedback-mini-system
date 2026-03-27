@@ -28,7 +28,10 @@ class GlobalExceptionHandler {
                 ?: "Invalid request"
 
         return ResponseEntity(
-            mapOf("message" to message),
+            mapOf(
+                "error" to message,
+                "message" to message
+            ),
             HttpStatus.BAD_REQUEST
         )
     }
@@ -46,7 +49,10 @@ class GlobalExceptionHandler {
                 ?: "Invalid request"
 
         return ResponseEntity(
-            mapOf("message" to message),
+            mapOf(
+                "error" to message,
+                "message" to message
+            ),
             HttpStatus.BAD_REQUEST
         )
     }
@@ -56,9 +62,12 @@ class GlobalExceptionHandler {
         ex: HttpMessageNotReadableException
     ): ResponseEntity<Map<String, String>> {
 
+        val message = "Invalid request body"
+
         return ResponseEntity(
             mapOf(
-                "message" to "Invalid request body"
+                "error" to message,
+                "message" to message
             ),
             HttpStatus.BAD_REQUEST
         )
@@ -79,13 +88,12 @@ class GlobalExceptionHandler {
         return when {
 
             message.contains("NOT_FOUND", true) ||
-
             message.contains("not found", true) ->
 
                 ResponseEntity(
                     mapOf(
-                        "message" to
-                            "Feedback not found"
+                        "error" to "NOT_FOUND",
+                        "message" to "Feedback not found"
                     ),
                     HttpStatus.NOT_FOUND
                 )
@@ -94,8 +102,8 @@ class GlobalExceptionHandler {
 
                 ResponseEntity(
                     mapOf(
-                        "message" to
-                            "This feedback link has expired."
+                        "error" to "EXPIRED",
+                        "message" to "This feedback link has expired."
                     ),
                     HttpStatus.OK
                 )
@@ -107,8 +115,8 @@ class GlobalExceptionHandler {
 
                 ResponseEntity(
                     mapOf(
-                        "message" to
-                            "Already responded"
+                        "error" to "ALREADY_RESPONDED",
+                        "message" to "Already responded"
                     ),
                     HttpStatus.OK
                 )
@@ -120,8 +128,8 @@ class GlobalExceptionHandler {
 
                 ResponseEntity(
                     mapOf(
-                        "message" to
-                            "Invalid rating"
+                        "error" to "INVALID_RATING",
+                        "message" to "Invalid rating"
                     ),
                     HttpStatus.BAD_REQUEST
                 )
@@ -130,6 +138,7 @@ class GlobalExceptionHandler {
 
                 ResponseEntity(
                     mapOf(
+                        "error" to message,
                         "message" to message
                     ),
                     HttpStatus.INTERNAL_SERVER_ERROR
@@ -146,10 +155,12 @@ class GlobalExceptionHandler {
         ex: Exception
     ): ResponseEntity<Map<String, String>> {
 
+        val message = "Internal server error"
+
         return ResponseEntity(
             mapOf(
-                "message" to
-                    "Internal server error"
+                "error" to message,
+                "message" to message
             ),
             HttpStatus.INTERNAL_SERVER_ERROR
         )
